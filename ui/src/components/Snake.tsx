@@ -136,14 +136,16 @@ const Snake = () => {
     }
     dispatch(setIsStarted(false));
     dispatch(setIsGameOver(true));
+    dispatch(setDirection(initialDirection));
+    dispatch(setNextDirection(initialDirection));
   };
 
   const startGame = () => {
     dispatch(setIsGameOver(false));
     dispatch(setIsStarted(true));
     dispatch(setPlayerPosition(initialPlayerPosition));
-    dispatch(setDirection(initialDirection));
     dispatch(setPlayerSize(1));
+    dispatch(setFoodPosition([-1, -1]));
 
     const state = store.getState() as unknown as { game: GameState };
     const { playerSize, playerPosition, direction } = state.game;
