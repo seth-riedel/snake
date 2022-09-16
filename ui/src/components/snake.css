@@ -1,0 +1,34 @@
+.snake {
+    
+}
+
+.row {
+    display: block;
+    height: 12px;
+}
+
+.tile {
+    width: 12px;
+    height: 12px;
+    border: 1px solid #ccc;
+    display: inline-block;
+    margin-left: -1px;
+}
+
+.tile.active {
+    background: green;
+}
+
+.player {
+    background: green;
+    display: block;
+    width: 12px;
+    height: 12px;
+}
+
+.item {
+    background: red;
+    display: block;
+    width: 12px;
+    height: 12px;
+}
