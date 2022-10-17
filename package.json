@@ -1,5 +1,5 @@
 {
-  "name": "shopping-list",
+  "name": "snake",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,16 +15,8 @@
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/seth-riedel/shopping-list.git"
-  },
   "author": "Seth Riedel",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/seth-riedel/shopping-list/issues"
-  },
-  "homepage": "https://github.com/seth-riedel/shopping-list#readme",
   "devDependencies": {
     "concurrently": "^6.2.1"
   }

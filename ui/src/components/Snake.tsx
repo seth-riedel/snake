@@ -79,11 +79,7 @@ const initialDirection = "south";
 
 let socket: any;
 
-const translateCoordsToBitOffset = (prevData: Coords[], data: Coords[]) => {
-  // console.log("Translate:");
-  // console.log(JSON.stringify(prevData));
-  // console.log(JSON.stringify(data));
-
+const translateCoords = (prevData: Coords[], data: Coords[]) => {
   const newValues = data.filter(
     ([x, y]) => !prevData.find(([px, py]) => px === x && py === y)
   );
@@ -134,6 +130,10 @@ const Snake = () => {
     if (intervalId) {
       clearInterval(intervalId);
     }
+    if (foodTimeout) {
+      clearTimeout(foodTimeout)
+      foodTimeout = null;
+    }
     dispatch(setIsStarted(false));
     dispatch(setIsGameOver(true));
     dispatch(setDirection(initialDirection));
@@ -143,13 +143,13 @@ const Snake = () => {
   const startGame = () => {
     dispatch(setIsGameOver(false));
     dispatch(setIsStarted(true));
+    dispatch(setScore(0));
     dispatch(setPlayerPosition(initialPlayerPosition));
     dispatch(setPlayerSize(1));
     dispatch(setFoodPosition([-1, -1]));
 
     const state = store.getState() as unknown as { game: GameState };
     const { playerSize, playerPosition, direction } = state.game;
-    console.log("STATE", state);
 
     intervalId = setInterval(() => {
       const state = store.getState() as unknown as { game: GameState };
@@ -204,7 +204,7 @@ const Snake = () => {
 
       let newPlayerPosition = [...playerPosition];
       if (justAte) {
-        setTimeout(spawnFood, 1100);
+        foodTimeout = setTimeout(spawnFood, 1100);
       } else if (playerPosition.length > playerSize) {
         newPlayerPosition.shift();
       }
@@ -212,10 +212,8 @@ const Snake = () => {
 
       // broadcast updated position and board status
       dispatch(setPlayerPosition([...newPlayerPosition]));
-      console.log('currentActivePlayerPositions', currentActivePlayerPositions)
-      console.log('newPlayerPosition', newPlayerPosition)
       socket?.emit("setPosition", {
-        position: translateCoordsToBitOffset(
+        position: translateCoords(
           currentActivePlayerPositions,
           newPlayerPosition.slice(newPlayerPosition.length - playerSize)
         ),
@@ -246,8 +244,6 @@ const Snake = () => {
     };
 
     // start game
-    console.log("start", playerPosition, initialPlayerPosition);
-
     const currentActivePlayerPositions = playerPosition.slice(
       playerPosition.length - playerSize
     );
@@ -264,23 +260,16 @@ const Snake = () => {
 
   // startup
   useEffect(() => {
-    console.log("useEffect!");
     // open ws to stream changes
-    console.log("opening socket...");
     // @ts-ignore
     socket = io("http://localhost:3111");
-    console.log("opened socket");
 
     socket.on("connect", () => {
       setIsConnected(true);
-      console.log("connected!");
-
-      socket.emit("foo", "bar");
     });
 
     socket.on("disconnect", () => {
       setIsConnected(false);
-      console.log("disconnected");
     });
 
     socket.on("gameover", () => {
@@ -288,7 +277,7 @@ const Snake = () => {
         return;
       }
 
-      setIsStarted(false);
+      dispatch(setIsStarted(false));
       dispatch(setIsGameOver(true));
     });
 
@@ -297,7 +286,7 @@ const Snake = () => {
         return;
       }
 
-      console.log("got data", allData);
+      dispatch(setIsGameOver(false));
       const data = allData.position;
 
       // food
@@ -322,7 +311,6 @@ const Snake = () => {
     });
 
     return () => {
-      console.log("UNMOUNT");
       if (socket) {
         socket.close();
       }
@@ -332,8 +320,6 @@ const Snake = () => {
   const activePlayerPositions = playerPosition.slice(
     playerPosition.length - playerSize
   );
-
-  // console.log("activePlayerPositions", activePlayerPositions);
 
   const rows = [];
   for (let y = 0; y < height; y++) {
@@ -364,7 +350,6 @@ const Snake = () => {
     );
   }
 
-  // console.log("RENDER", playerSize, JSON.stringify(playerPosition));
   return (
     <>
       <div className="snake">{rows}</div>
